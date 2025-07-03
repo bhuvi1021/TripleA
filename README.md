@@ -92,8 +92,8 @@ go run main.go
 ### ✅ POST /accounts
 
 **Request:**
-```json
-curl --location 'http://localhost:8080/accounts' \
+```
+curl --location 'http://localhost:9005/accounts' \
 --header 'Content-Type: application/json' \
 --data '{
 "account_id": 999,
@@ -124,9 +124,9 @@ curl --location 'http://localhost:8080/accounts' \
 
 ### ✅ GET /accounts/{account_id}
 
-**Example:**
+**Request:**
 ```
-GET /accounts/123
+curl --location 'http://localhost:9005/accounts/999'
 ```
 
 **Response:**
@@ -150,12 +150,14 @@ GET /accounts/123
 ### ✅ POST /transactions
 
 **Request:**
-```json
-{
-  "source_account_id": 1001,
-  "destination_account_id": 1002,
-  "amount": "250.00"
-}
+```
+curl --location 'http://localhost:9005/transactions' \
+--header 'Content-Type: application/json' \
+--data '{
+    "source_account_id": 1001,
+    "destination_account_id": 1002,
+     "amount": "250.00"
+}'
 ```
 
 **Success Response:**
@@ -184,6 +186,12 @@ GET /accounts/123
 ```json
 {
   "error_message": "insufficient funds in sender account"
+}
+```
+**Error Response when source and destination account are same:**
+```json
+{
+  "error_message": "sender and receiver account ids must be different"
 }
 ```
 
