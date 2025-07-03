@@ -1,31 +1,51 @@
 # TripleA – Internal Money Transfer System
 
-TripleA is a lightweight internal money transfer system written in Go. It handles account creation, balance updates, and atomic transactions between accounts. Designed with a layered architecture and clear separation of concerns.
+TripleA is a lightweight internal money transfer system written in Go. It handles account creation, balance updates, and money transfer transactions between accounts. Designed with a layered architecture.
 
 ## Features
 
-- 🚀 RESTful APIs for account and transaction management
-- 🔒 Atomic balance updates using SQL transactions
-- 🧪 Table-driven unit tests and mocks
-- 🧩 Layered architecture (handler → service → repository)
-- 🐘 PostgreSQL as the underlying database
+-  RESTful APIs for account and transaction management
+-  Atomic balance updates using SQL transactions
+-  Table-driven unit tests and mocks
+-  Layered architecture (handler → service → repository)
+-  PostgreSQL as the underlying database
 
 ---
+
+## Project Assumptions
+- The amount in the payload is considered as string as mentioned in the requirement, though using float would be more appropriate
+- The account id in the payload is considered as int as mentioned in the requirement, though using string would be more appropriate
+- No transaction activities are recorded
+
+
+## Project Explanation
+
+# Accounts
+- For Get Accounts api, we will also return IsDeleted flag if the account is soft-deleted. This is to support backward support for the user's past activities or transactions
+- For Create Transaction api, we will create two records for each money transfer. for eg, if money is transfered from Account 123 to 124, then two record will be recorded 1) debit entry for account 123 and 2) credit entry for account 124. This is to support the ledger/transaction history for the user.
+- To link these two credit and debit transaction, reference can be used. 
+- We also maintain available_balance in transaction table to support ledger functions.
 
 ## Project Structure
 
 ```
-/cmd/               # Main application entry
+/main.go                # Main application entry
+/config/                # Configs
+/database/              # Database migraation
+/routes/                # Routes for registration
 /internal/
-  /handlers/        # HTTP layer
-  /service/         # Business logic
-  /repository/      # DB interactions
-  /models/          # DB models
-  /errors/          # Custom error types and HTTP mapping
-/tests/             # Test files (table-driven and mocks)
+  /server/handlers/     # HTTP layer
+  /service/             # Business logic
+  /repository/          # DB interactions
+  /models/              # DB models
+  /errors/              # Custom error types and HTTP response code mapping
 ```
 
 ---
+
+## Database Schema
+accounts Table
+
 
 ## Setup
 
@@ -34,11 +54,15 @@ TripleA is a lightweight internal money transfer system written in Go. It handle
 - Go 1.20+
 - PostgreSQL
 - [Go Mock](https://github.com/golang/mock) for tests
+- Update the postgres password and port number in config/config.go line number #15
+``` bash 
+DatabaseURL: getEnv("DATABASE_URL", "postgres://postgres:yourpassword@localhost:5432/postgres?sslmode=disable"),
+```
 
 ### Install
 
 ```bash
-git clone https://github.com/your-org/TripleA.git
+git clone https://github.com/bhuvi1021/TripleA.git
 cd TripleA
 go mod tidy
 ```

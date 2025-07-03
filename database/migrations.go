@@ -40,7 +40,6 @@ func RunMigrations(db *sql.DB) error {
     CREATE INDEX IF NOT EXISTS idx_transactions_account ON transactions(account_id);
 	`
 
-	// Execute migrations
 	if _, err := db.Exec(accountsTable); err != nil {
 		return err
 	}

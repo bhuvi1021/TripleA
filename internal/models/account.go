@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// Account represents a financial account
+// Account represents a financial account of the user. It maintains the current balance
 type Account struct {
 	Id        int64        `db:"id"`
 	AccountId int64        `db:"account_id"`
@@ -21,7 +21,7 @@ type CreateAccountRequest struct {
 	InitialBalance string `json:"initial_balance,binding:required"`
 }
 
-// GetAccountResponse represents the request body for creating an account
+// GetAccountResponse represents the response body for creating an account
 type GetAccountResponse struct {
 	AccountId int64  `json:"account_id"`
 	Balance   string `json:"balance"`

@@ -2,10 +2,10 @@ package service
 
 import (
 	"context"
-	"fmt"
 	appErr "github.com/bhuvi1021/TripleA/internal/errors"
 	"github.com/bhuvi1021/TripleA/internal/models"
 	"github.com/bhuvi1021/TripleA/internal/repository"
+	"log"
 	"strconv"
 	"time"
 )
@@ -27,13 +27,13 @@ type IAccountService interface {
 func (s *AccountService) CreateAccount(ctx context.Context, req models.CreateAccountRequest) error {
 	fName := "AccountService.CreateAccount"
 	if req.AccountId <= 0 {
-		fmt.Printf("[%s] failed to parse the account id: %v", fName, appErr.ErrInvalidAccountId)
+		log.Printf("[%s] failed to parse the account id: %v", fName, appErr.ErrInvalidAccountId)
 		return appErr.ErrInvalidAccountId
 	}
 
 	initialBalance, err := parseBalance(req.InitialBalance)
 	if err != nil {
-		fmt.Printf("[%s] failed to parse balance: %v", fName, err)
+		log.Printf("[%s] failed to parse balance: %v", fName, err)
 		return appErr.ErrInvalidAmount
 	}
 
@@ -43,12 +43,12 @@ func (s *AccountService) CreateAccount(ctx context.Context, req models.CreateAcc
 
 	account, err := s.accountRepo.GetByAccountId(req.AccountId)
 	if err != nil && err != appErr.ErrAccountNotFound {
-		fmt.Printf("[%s] failed due to: %v", fName, appErr.ErrInternal)
+		log.Printf("[%s] failed due to: %v", fName, appErr.ErrInternal)
 		return appErr.ErrInternal
 	}
 
 	if account != nil {
-		fmt.Printf("[%s] failed due to: %v", fName, appErr.ErrAccountExists)
+		log.Printf("[%s] failed due to: %v", fName, appErr.ErrAccountExists)
 		return appErr.ErrAccountExists
 	}
 

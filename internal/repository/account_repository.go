@@ -2,9 +2,9 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
 	appErr "github.com/bhuvi1021/TripleA/internal/errors"
 	"github.com/bhuvi1021/TripleA/internal/models"
+	"log"
 )
 
 // AccountRepository handles account database operations
@@ -30,13 +30,13 @@ func (r *AccountRepository) CreateAccount(account models.Account) error {
 	query := `INSERT INTO accounts (account_id, balance, created_at, updated_at) VALUES ($1, $2, $3, $4)`
 	_, err := r.db.Exec(query, account.AccountId, account.Balance, account.CreatedAt, account.UpdatedAt)
 	if err != nil {
-		fmt.Printf("[%s] failed due to error %+v. ", fName, err)
+		log.Printf("[%s] failed due to error %+v. ", fName, err)
 		return appErr.ErrAccountCreation
 	}
 	return nil
 }
 
-// GetByID retrieves an account by ID
+// GetByAccountId retrieves an account by AccountId
 func (r *AccountRepository) GetByAccountId(accountId int64) (*models.Account, error) {
 	fName := "AccountRepository.GetByAccountId"
 	query := `SELECT id, account_id, balance, created_at, updated_at, deleted_at FROM accounts WHERE account_id = $1`
@@ -45,7 +45,7 @@ func (r *AccountRepository) GetByAccountId(accountId int64) (*models.Account, er
 	var account models.Account
 	err := row.Scan(&account.Id, &account.AccountId, &account.Balance, &account.CreatedAt, &account.UpdatedAt, &account.DeletedAt)
 	if err != nil {
-		fmt.Printf("[%s] failed due to error %+v. ", fName, err)
+		log.Printf("[%s] failed due to error %+v. ", fName, err)
 		if err == sql.ErrNoRows {
 			return nil, appErr.ErrAccountNotFound
 		}
@@ -61,18 +61,18 @@ func (r *AccountRepository) UpdateBalance(tx *sql.Tx, accountId int64, newBalanc
 	query := `UPDATE accounts SET balance = $1, updated_at = CURRENT_TIMESTAMP WHERE account_id = $2`
 	result, err := tx.Exec(query, newBalance, accountId)
 	if err != nil {
-		fmt.Printf("[%s] failed to update balance: %v", fName, err)
+		log.Printf("[%s] failed to update balance: %v", fName, err)
 		return appErr.ErrInternal
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		fmt.Printf("[%s] failed to get rows affected: %v", fName, err)
+		log.Printf("[%s] failed to get rows affected: %v", fName, err)
 		return appErr.ErrInternal
 	}
 
 	if rowsAffected == 0 {
-		fmt.Printf("[%s] account not found: %v", fName, err)
+		log.Printf("[%s] account not found: %v", fName, err)
 		return appErr.ErrAccountNotFound
 	}
 
@@ -88,7 +88,7 @@ func (r *AccountRepository) GetBalanceForUpdate(tx *sql.Tx, accountId int64) (fl
 	var balance float64
 	err := row.Scan(&balance)
 	if err != nil {
-		fmt.Printf("[%s] failed due to error %+v. ", fName, err)
+		log.Printf("[%s] failed due to error %+v. ", fName, err)
 		if err == sql.ErrNoRows {
 			return 0, appErr.ErrAccountNotFound
 		}

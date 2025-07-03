@@ -252,7 +252,7 @@ func TestGetBalanceForUpdate(t *testing.T) {
 			setupMock: func(mock sqlmock.Sqlmock) {
 				mock.ExpectBegin()
 				rows := sqlmock.NewRows([]string{"balance"}).
-					AddRow(nil) // Simulate scan error with NULL
+					AddRow(nil)
 				mock.ExpectQuery("SELECT balance FROM accounts").
 					WithArgs(int64(3)).
 					WillReturnRows(rows)

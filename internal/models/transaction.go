@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// Transaction represents a financial transaction
+// Transaction represents a money transfer transaction
 type Transaction struct {
 	Id           int64        `db:"id"`
 	AccountId    int64        `db:"account_id"`
@@ -25,7 +25,7 @@ type CreateTransactionRequest struct {
 	Amount               string `json:"amount,binding:required"`
 }
 
-// CreateTransactionRequest represents the request body for creating a transaction
+// CreateTransactionArgs represents the internal service payload for creating a transaction
 type CreateTransactionArgs struct {
 	SourceAccountId      int64
 	DestinationAccountId int64
