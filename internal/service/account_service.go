@@ -25,9 +25,9 @@ type IAccountService interface {
 
 func (s *AccountService) CreateAccount(ctx context.Context, req models.CreateAccountRequest) error {
 	fName := "AccountService.CreateAccount"
-	if req.AccountId == 0 {
-		fmt.Printf("[%s] failed to get account: %v", fName, appErr.ErrAccountNotFound)
-		return appErr.ErrAccountNotFound
+	if req.AccountId <= 0 {
+		fmt.Printf("[%s] failed to parse the account id: %v", fName, appErr.ErrInvalidAccountId)
+		return appErr.ErrInvalidAccountId
 	}
 
 	initialBalance, err := parseBalance(req.InitialBalance)
