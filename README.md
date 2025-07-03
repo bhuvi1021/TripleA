@@ -202,10 +202,6 @@ curl --location 'http://localhost:9005/transactions' \
 
 ----
 
-## Postman Collection
-```https://bhuvigovindan.postman.co/workspace/Bhuvi-Govindan's-Workspace~633e42af-a437-42e5-893f-504ceaedf3f5/collection/46333463-9c15f2f6-3f14-4a19-a536-0b71d5c6411a?action=share&creator=46333463```
-
-
 ## Testing
 
 ```bash
