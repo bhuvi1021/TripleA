@@ -19,8 +19,6 @@ TripleA is a lightweight internal money transfer system written in Go. It handle
 
 
 ## Project Explanation
-
-# Accounts
 - For Get Accounts api, we will also return IsDeleted flag if the account is soft-deleted. This is to support backward support for the user's past activities or transactions
 - For Create Transaction api, we will create two records for each money transfer. for eg, if money is transfered from Account 123 to 124, then two record will be recorded 1) debit entry for account 123 and 2) credit entry for account 124. This is to support the ledger/transaction history for the user.
 - To link these two credit and debit transaction, reference can be used. 
