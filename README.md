@@ -41,10 +41,6 @@ TripleA is a lightweight internal money transfer system written in Go. It handle
 
 ---
 
-## Database Schema
-accounts Table
-
-
 ## Setup
 
 ### Prerequisites
@@ -198,12 +194,6 @@ To regenerate mocks:
 ```bash
 mockgen -source=internal/repository/interfaces.go -destination=internal/repository/mocks/mock_repository.go -package=mocks
 ```
-
----
-
-## License
-
-MIT License
 
 ---
 
