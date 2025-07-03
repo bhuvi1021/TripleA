@@ -22,9 +22,8 @@ type ITransactionRepository interface {
 	CreateTransaction(req models.CreateTransactionArgs) (models.CreateTransactionResponse, error)
 }
 
-// Create creates a new transaction and updates account balances atomically
+// CreateTransaction creates a two transaction entries in Transactions table and updates account balances in Accounts table
 func (r *TransactionRepository) CreateTransaction(req models.CreateTransactionArgs) (models.CreateTransactionResponse, error) {
-	// Start transaction
 	fName := "TransactionRepository.CreateTransaction"
 	var resp models.CreateTransactionResponse
 
@@ -42,7 +41,6 @@ func (r *TransactionRepository) CreateTransaction(req models.CreateTransactionAr
 		return resp, appErr.ErrTransactionFailed
 	}
 
-	// Check if source account has sufficient funds
 	if sourceBalance < req.Amount {
 		return resp, appErr.ErrInsufficientBalance
 	}
@@ -54,7 +52,6 @@ func (r *TransactionRepository) CreateTransaction(req models.CreateTransactionAr
 		return resp, appErr.ErrTransactionFailed
 	}
 
-	// Calculate new balances
 	newSourceBalance := sourceBalance - req.Amount
 	newDestinationBalance := destinationBalance + req.Amount
 
@@ -71,21 +68,20 @@ func (r *TransactionRepository) CreateTransaction(req models.CreateTransactionAr
 	}
 
 	// Create debit transaction record
-	query := `INSERT INTO transactions (account_id, amount, currency_code,is_credit,reference) VALUES ($1, $2, $3, $4, $5)`
-	_, err = tx.Exec(query, req.SourceAccountId, req.Amount, req.CurrencyCode, false, req.Reference)
+	query := `INSERT INTO transactions (account_id, amount, currency_code, available_balance, is_credit, reference) VALUES ($1, $2, $3, $4, $5, $6)`
+	_, err = tx.Exec(query, req.SourceAccountId, req.Amount, req.CurrencyCode, newSourceBalance, false, req.Reference)
 	if err != nil {
 		fmt.Printf("[%s] failed to create debit transaction record: %v", fName, err)
 		return resp, appErr.ErrTransactionFailed
 	}
 
 	// Create credit transaction record
-	_, err = tx.Exec(query, req.DestinationAccountId, req.Amount, req.CurrencyCode, true, req.Reference)
+	_, err = tx.Exec(query, req.DestinationAccountId, req.Amount, req.CurrencyCode, newDestinationBalance, true, req.Reference)
 	if err != nil {
 		fmt.Printf("[%s] failed to create credit transaction record: %v", fName, err)
 		return resp, appErr.ErrTransactionFailed
 	}
 
-	// Commit transaction
 	if err := tx.Commit(); err != nil {
 		fmt.Printf("[%s] failed to commit transaction: %v", fName, err)
 		return resp, appErr.ErrTransactionFailed

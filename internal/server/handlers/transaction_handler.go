@@ -18,6 +18,7 @@ func NewTransactionHandler(service service.ITransactionService) *TransactionHand
 	return &TransactionHandler{service: service}
 }
 
+// CreateTransaction handles POST /transactions
 func (th *TransactionHandler) CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	var req models.CreateTransactionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -37,7 +38,6 @@ func (th *TransactionHandler) CreateTransaction(w http.ResponseWriter, r *http.R
 		Amount:               amount,
 	})
 	if err != nil {
-		// You can improve this by using a custom error map like the account handler
 		th.sendErrorResponse(w, err)
 		return
 	}
@@ -45,7 +45,7 @@ func (th *TransactionHandler) CreateTransaction(w http.ResponseWriter, r *http.R
 	th.sendSuccessResponse(w, resp)
 }
 
-// sendErrorResponse writes an error response
+// sendErrorResponse to build an error response
 func (th *TransactionHandler) sendErrorResponse(w http.ResponseWriter, err error) {
 	statusCode, ok := appErr.HTTPStatusMap[err]
 	if !ok {
@@ -57,7 +57,7 @@ func (th *TransactionHandler) sendErrorResponse(w http.ResponseWriter, err error
 	json.NewEncoder(w).Encode(models.ErrorResponse{ErrorMessage: err.Error()})
 }
 
-// sendErrorResponse writes an error response
+// sendErrorResponse to build success response
 func (th *TransactionHandler) sendSuccessResponse(w http.ResponseWriter, resp models.CreateTransactionResponse) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)

@@ -23,6 +23,7 @@ type IAccountService interface {
 	GetAccount(ctx context.Context, id int64) (*models.Account, error)
 }
 
+// CreateAccount is a service method that creates the account with initial balance
 func (s *AccountService) CreateAccount(ctx context.Context, req models.CreateAccountRequest) error {
 	fName := "AccountService.CreateAccount"
 	if req.AccountId <= 0 {
@@ -60,10 +61,12 @@ func (s *AccountService) CreateAccount(ctx context.Context, req models.CreateAcc
 	})
 }
 
+// GetAccount a service method that gets the details of the account
 func (s *AccountService) GetAccount(ctx context.Context, accountID int64) (*models.Account, error) {
 	return s.accountRepo.GetByAccountId(accountID)
 }
 
+// parseBalance used for parsing the balance passed in payload
 func parseBalance(balanceStr string) (float64, error) {
 	return strconv.ParseFloat(balanceStr, 64)
 }

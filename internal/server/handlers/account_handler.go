@@ -61,7 +61,7 @@ func (ah *AccountHandler) GetAccount(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// sendErrorResponse writes an error response
+// sendErrorResponse to build an error response
 func (ah *AccountHandler) sendErrorResponse(w http.ResponseWriter, err error) {
 	statusCode, ok := appErr.HTTPStatusMap[err]
 	if !ok {
@@ -73,7 +73,7 @@ func (ah *AccountHandler) sendErrorResponse(w http.ResponseWriter, err error) {
 	json.NewEncoder(w).Encode(models.ErrorResponse{ErrorMessage: err.Error()})
 }
 
-// sendErrorResponse writes an error response
+// sendSuccessResponse to build a success response
 func (ah *AccountHandler) sendSuccessResponse(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(struct{}{})
