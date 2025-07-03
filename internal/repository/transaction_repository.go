@@ -18,6 +18,10 @@ func NewTransactionRepository(db *sql.DB) *TransactionRepository {
 	return &TransactionRepository{db: db}
 }
 
+type ITransactionRepository interface {
+	CreateTransaction(req models.CreateTransactionArgs) (models.CreateTransactionResponse, error)
+}
+
 // Create creates a new transaction and updates account balances atomically
 func (r *TransactionRepository) CreateTransaction(req models.CreateTransactionArgs) (models.CreateTransactionResponse, error) {
 	// Start transaction
@@ -26,7 +30,7 @@ func (r *TransactionRepository) CreateTransaction(req models.CreateTransactionAr
 
 	tx, err := r.db.Begin()
 	if err != nil {
-		fmt.Println("[%s] failed due to %w", fName, err)
+		fmt.Printf("[%s] failed due to %v", fName, err)
 		return resp, appErr.ErrTransactionFailed
 	}
 	defer tx.Rollback()
@@ -34,7 +38,7 @@ func (r *TransactionRepository) CreateTransaction(req models.CreateTransactionAr
 	// Get source account balance with row lock
 	sourceBalance, err := r.getAccountRepository().GetBalanceForUpdate(tx, req.SourceAccountId)
 	if err != nil {
-		fmt.Println("[%s] failed to get source account balance: %w", fName, err)
+		fmt.Printf("[%s] failed to get source account balance: %v", fName, err)
 		return resp, appErr.ErrTransactionFailed
 	}
 
@@ -46,7 +50,7 @@ func (r *TransactionRepository) CreateTransaction(req models.CreateTransactionAr
 	// Get destination account balance with row lock
 	destinationBalance, err := r.getAccountRepository().GetBalanceForUpdate(tx, req.DestinationAccountId)
 	if err != nil {
-		fmt.Println("[%s] failed to get destination account balance: %w", fName, err)
+		fmt.Printf("[%s] failed to get destination account balance: %v", fName, err)
 		return resp, appErr.ErrTransactionFailed
 	}
 
@@ -56,13 +60,13 @@ func (r *TransactionRepository) CreateTransaction(req models.CreateTransactionAr
 
 	// Update source account balance
 	if err := r.getAccountRepository().UpdateBalance(tx, req.SourceAccountId, newSourceBalance); err != nil {
-		fmt.Println("[%s] failed to update source account balance: %w", fName, err)
+		fmt.Printf("[%s] failed to update source account balance: %v", fName, err)
 		return resp, appErr.ErrTransactionFailed
 	}
 
 	// Update destination account balance
 	if err := r.getAccountRepository().UpdateBalance(tx, req.DestinationAccountId, newDestinationBalance); err != nil {
-		fmt.Println("[%s] failed to update destination account balance: %w", fName, err)
+		fmt.Printf("[%s] failed to update destination account balance: %v", fName, err)
 		return resp, appErr.ErrTransactionFailed
 	}
 
@@ -70,20 +74,20 @@ func (r *TransactionRepository) CreateTransaction(req models.CreateTransactionAr
 	query := `INSERT INTO transactions (account_id, amount, currency_code,is_credit,reference) VALUES ($1, $2, $3, $4, $5)`
 	_, err = tx.Exec(query, req.SourceAccountId, req.Amount, req.CurrencyCode, false, req.Reference)
 	if err != nil {
-		fmt.Println("[%s] failed to create debit transaction record: %w", fName, err)
+		fmt.Printf("[%s] failed to create debit transaction record: %v", fName, err)
 		return resp, appErr.ErrTransactionFailed
 	}
 
 	// Create credit transaction record
 	_, err = tx.Exec(query, req.DestinationAccountId, req.Amount, req.CurrencyCode, true, req.Reference)
 	if err != nil {
-		fmt.Println("[%s] failed to create credit transaction record: %w", fName, err)
+		fmt.Printf("[%s] failed to create credit transaction record: %v", fName, err)
 		return resp, appErr.ErrTransactionFailed
 	}
 
 	// Commit transaction
 	if err := tx.Commit(); err != nil {
-		fmt.Println("[%s] failed to commit transaction: %w", fName, err)
+		fmt.Printf("[%s] failed to commit transaction: %v", fName, err)
 		return resp, appErr.ErrTransactionFailed
 	}
 

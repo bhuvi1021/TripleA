@@ -48,6 +48,6 @@ func RunMigrations(db *sql.DB) error {
 		return err
 	}
 
-	log.Println("Database migrations completed successfully")
+	log.Printf("Database migrations completed successfully")
 	return nil
 }

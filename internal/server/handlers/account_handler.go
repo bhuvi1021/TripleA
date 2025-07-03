@@ -10,13 +10,11 @@ import (
 	"strconv"
 )
 
-// Handler contains the dependencies for HTTP handlers
 type AccountHandler struct {
-	service *service.AccountService
+	service service.IAccountService
 }
 
-// New creates a new handler instance
-func NewAccountHandler(service *service.AccountService) *AccountHandler {
+func NewAccountHandler(service service.IAccountService) *AccountHandler {
 	return &AccountHandler{service: service}
 }
 

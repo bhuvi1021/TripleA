@@ -11,15 +11,19 @@ import (
 )
 
 type TransactionService struct {
-	transactionRepo *repository.TransactionRepository
-	accountRepo     *repository.AccountRepository
+	transactionRepo repository.ITransactionRepository
+	accountRepo     repository.IAccountRepository
 }
 
-func NewTransactionService(transactionRepo *repository.TransactionRepository, accountRepo *repository.AccountRepository) *TransactionService {
+func NewTransactionService(transactionRepo repository.ITransactionRepository, accountRepo repository.IAccountRepository) *TransactionService {
 	return &TransactionService{
 		transactionRepo: transactionRepo,
 		accountRepo:     accountRepo,
 	}
+}
+
+type ITransactionService interface {
+	CreateTransaction(ctx context.Context, req models.CreateTransactionArgs) (models.CreateTransactionResponse, error)
 }
 
 func (ts *TransactionService) CreateTransaction(ctx context.Context, req models.CreateTransactionArgs) (resp models.CreateTransactionResponse, err error) {

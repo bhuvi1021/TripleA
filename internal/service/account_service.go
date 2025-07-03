@@ -11,23 +11,28 @@ import (
 )
 
 type AccountService struct {
-	accountRepo *repository.AccountRepository
+	accountRepo repository.IAccountRepository
 }
 
-func NewAccountService(repo *repository.AccountRepository) *AccountService {
+func NewAccountService(repo repository.IAccountRepository) *AccountService {
 	return &AccountService{accountRepo: repo}
+}
+
+type IAccountService interface {
+	CreateAccount(ctx context.Context, req models.CreateAccountRequest) error
+	GetAccount(ctx context.Context, id int64) (*models.Account, error)
 }
 
 func (s *AccountService) CreateAccount(ctx context.Context, req models.CreateAccountRequest) error {
 	fName := "AccountService.CreateAccount"
 	if req.AccountId == 0 {
-		fmt.Println("[%s] failed to get account: %w", fName, appErr.ErrAccountNotFound)
+		fmt.Printf("[%s] failed to get account: %v", fName, appErr.ErrAccountNotFound)
 		return appErr.ErrAccountNotFound
 	}
 
 	initialBalance, err := parseBalance(req.InitialBalance)
 	if err != nil {
-		fmt.Println("[%s] failed to parse balance: %w", fName, err)
+		fmt.Printf("[%s] failed to parse balance: %v", fName, err)
 		return appErr.ErrInvalidAmount
 	}
 
@@ -36,14 +41,13 @@ func (s *AccountService) CreateAccount(ctx context.Context, req models.CreateAcc
 	}
 
 	account, err := s.accountRepo.GetByAccountId(req.AccountId)
-	fmt.Println(account)
 	if err != nil && err != appErr.ErrAccountNotFound {
-		fmt.Println("[%s] failed due to: %w", fName, appErr.ErrInternal)
+		fmt.Printf("[%s] failed due to: %v", fName, appErr.ErrInternal)
 		return appErr.ErrInternal
 	}
 
 	if account != nil {
-		fmt.Println("[%s] failed due to: %w", fName, appErr.ErrAccountExists)
+		fmt.Printf("[%s] failed due to: %v", fName, appErr.ErrAccountExists)
 		return appErr.ErrAccountExists
 	}
 

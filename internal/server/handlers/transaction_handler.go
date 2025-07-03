@@ -11,10 +11,10 @@ import (
 )
 
 type TransactionHandler struct {
-	service *service.TransactionService
+	service service.ITransactionService
 }
 
-func NewTransactionHandler(service *service.TransactionService) *TransactionHandler {
+func NewTransactionHandler(service service.ITransactionService) *TransactionHandler {
 	return &TransactionHandler{service: service}
 }
 

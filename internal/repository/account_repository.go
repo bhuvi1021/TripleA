@@ -17,11 +17,17 @@ func NewAccountRepository(db *sql.DB) *AccountRepository {
 	return &AccountRepository{db: db}
 }
 
+type IAccountRepository interface {
+	CreateAccount(account models.Account) error
+	GetByAccountId(accountId int64) (*models.Account, error)
+	UpdateBalance(tx *sql.Tx, accountId int64, newBalance float64) error
+	GetBalanceForUpdate(tx *sql.Tx, accountId int64) (float64, error)
+}
+
 // Create creates a new account
 func (r *AccountRepository) CreateAccount(account models.Account) error {
 	fName := "AccountRepository.CreateAccount"
 	query := `INSERT INTO accounts (account_id, balance, created_at, updated_at) VALUES ($1, $2, $3, $4)`
-	fmt.Printf("db account %+v. ", account)
 	_, err := r.db.Exec(query, account.AccountId, account.Balance, account.CreatedAt, account.UpdatedAt)
 	if err != nil {
 		fmt.Printf("[%s] failed due to error %+v. ", fName, err)
@@ -55,18 +61,18 @@ func (r *AccountRepository) UpdateBalance(tx *sql.Tx, accountId int64, newBalanc
 	query := `UPDATE accounts SET balance = $1, updated_at = CURRENT_TIMESTAMP WHERE account_id = $2`
 	result, err := tx.Exec(query, newBalance, accountId)
 	if err != nil {
-		fmt.Println("[%s] failed to update balance: %w", fName, err)
+		fmt.Printf("[%s] failed to update balance: %v", fName, err)
 		return appErr.ErrInternal
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		fmt.Println("[%s] failed to get rows affected: %w", fName, err)
+		fmt.Printf("[%s] failed to get rows affected: %v", fName, err)
 		return appErr.ErrInternal
 	}
 
 	if rowsAffected == 0 {
-		fmt.Println("[%s] account not found: %w", fName, err)
+		fmt.Printf("[%s] account not found: %v", fName, err)
 		return appErr.ErrAccountNotFound
 	}
 
