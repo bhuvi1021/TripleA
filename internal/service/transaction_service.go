@@ -62,7 +62,10 @@ func (ts *TransactionService) validateCreateTransactionRequest(req models.Create
 
 	sourceAccount, err := ts.accountRepo.GetByAccountId(req.SourceAccountId)
 	if err != nil {
-		return appErr.ErrInternal
+		if err == appErr.ErrAccountNotFound {
+			return appErr.ErrSourceAccountNotFound
+		}
+		return err
 	}
 	if sourceAccount == nil || sourceAccount.DeletedAt.Valid {
 		return appErr.ErrSourceAccountNotFound
@@ -70,7 +73,10 @@ func (ts *TransactionService) validateCreateTransactionRequest(req models.Create
 
 	destAccount, err := ts.accountRepo.GetByAccountId(req.DestinationAccountId)
 	if err != nil {
-		return appErr.ErrInternal
+		if err == appErr.ErrAccountNotFound {
+			return appErr.ErrDestinationAccountNotFound
+		}
+		return err
 	}
 	if destAccount == nil || destAccount.DeletedAt.Valid {
 		return appErr.ErrDestinationAccountNotFound

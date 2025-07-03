@@ -101,7 +101,7 @@ curl --location 'http://localhost:9005/accounts' \
 }'
 ```
 
-**Response:**
+**Success Response:**
 ```json
 {}
 ```
@@ -126,10 +126,10 @@ curl --location 'http://localhost:9005/accounts' \
 
 **Request:**
 ```
-curl --location 'http://localhost:9005/accounts/999'
+curl --location 'http://localhost:9005/accounts/123'
 ```
 
-**Response:**
+**Success Response:**
 ```json
 {
   "account_id": 123,
@@ -137,13 +137,18 @@ curl --location 'http://localhost:9005/accounts/999'
 }
 ```
 
-**Response (Inactive/Deleted account):**
+**Success Response (Inactive/Deleted account):**
 ```json
 {
   "account_id": 123,
   "balance": "100.00000",
   "is_deleted": true
 }
+```
+
+**Error Responses:**
+```json
+{ "error_message": "account not found"}
 ```
 ---
 
