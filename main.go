@@ -1,25 +1,66 @@
 package main
 
 import (
-	"fmt"
+	"database/sql"
+	"github.com/bhuvi1021/TripleA/config"
+	"github.com/bhuvi1021/TripleA/database"
+	"github.com/bhuvi1021/TripleA/internal/repository"
+	"github.com/bhuvi1021/TripleA/internal/server/handlers"
+	"github.com/bhuvi1021/TripleA/internal/service"
+	"log"
+	"net/http"
+
+	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
 )
 
-//TIP To run your code, right-click the code and select <b>Run</b>. Alternatively, click
-// the <icon src="AllIcons.Actions.Execute"/> icon in the gutter and select the <b>Run</b> menu item from here.
-
 func main() {
-	//TIP Press <shortcut actionId="ShowIntentionActions"/> when your caret is at the underlined or highlighted text
-	// to see how GoLand suggests fixing it.
-	s := "gopher"
-	fmt.Println("Hello and welcome, %s!", s)
+	// Load configuration
+	cfg := config.Load()
 
-	for i := 1; i <= 5; i++ {
-		//TIP You can try debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-		// for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>. To start your debugging session,
-		// right-click your code in the editor and select the <b>Debug</b> option.
-		fmt.Println("i =", 100/i)
+	// Initialize database connection
+	db, err := sql.Open("postgres", cfg.DatabaseURL)
+	if err != nil {
+		log.Fatal("Failed to connect to database:", err)
 	}
-}
+	defer db.Close()
 
-//TIP See GoLand help at <a href="https://www.jetbrains.com/help/go/">jetbrains.com/help/go/</a>.
-// Also, you can try interactive lessons for GoLand by selecting 'Help | Learn IDE Features' from the main menu.
+	// Test database connection
+	if err := db.Ping(); err != nil {
+		log.Fatal("Failed to ping database:", err)
+	}
+
+	// Run database migrations
+	if err := database.RunMigrations(db); err != nil {
+		log.Fatal("Failed to run migrations:", err)
+	}
+
+	// Initialize repositories
+	accountRepo := repository.NewAccountRepository(db)
+	transactionRepo := repository.NewTransactionRepository(db)
+
+	// Initialize services
+	accountService := service.NewAccountService(accountRepo)
+	transactionService := service.NewTransactionService(transactionRepo, accountRepo)
+
+	// Initialize handlers
+	accountHandler := handlers.NewAccountHandler(accountService)
+	transactionHandler := handlers.NewTransactionHandler(transactionService)
+
+	// Setup routes
+	router := mux.NewRouter()
+	router.HandleFunc("/accounts", accountHandler.CreateAccount).Methods("POST")
+	router.HandleFunc("/accounts/{account_id}", accountHandler.GetAccount).Methods("GET")
+	router.HandleFunc("/transactions", transactionHandler.CreateTransaction).Methods("POST")
+
+	// Add middleware for JSON content type
+	router.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			next.ServeHTTP(w, r)
+		})
+	})
+
+	log.Printf("Server starting on port %s", cfg.Port)
+	log.Fatal(http.ListenAndServe(":"+cfg.Port, router))
+}
