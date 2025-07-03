@@ -16,6 +16,7 @@ TripleA is a lightweight internal money transfer system written in Go. It handle
 - The amount in the payload is considered as string as mentioned in the requirement, though using float would be more appropriate
 - The account id in the payload is considered as int as mentioned in the requirement, though using string would be more appropriate
 - No transaction activities are recorded
+- No staus column is maintained for accounts(as there is no endpoints to set it in the requirement). only active and inactive is determined via deleted_at column. 
 
 
 ## Project Explanation
@@ -125,18 +126,23 @@ curl --location 'http://localhost:8080/accounts' \
 
 **Example:**
 ```
-GET /accounts/1001
+GET /accounts/123
 ```
 
 **Response:**
 ```json
-curl --location 'http://localhost:8080/accounts/123'
+{
+  "account_id": 123,
+  "balance": "100.00000"
+}
 ```
+
 **Response (Inactive/Deleted account):**
 ```json
 {
   "account_id": 123,
-  "balance": "100.00000"
+  "balance": "100.00000",
+  "is_deleted": true
 }
 ```
 ---
